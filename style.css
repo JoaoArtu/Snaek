@@ -29,8 +29,30 @@ body {
 	width: 800px;
 }
 
+.btn {
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid #669;
+  border-radius: .5em;
+  padding: 1em 2em;
+  transition: background-color .15s ease;
+}
+
+.btn:hover {
+  background: #669;
+}
+
 .game {
 	background: #669;
+}
+
+.how-to {
+  color: #ccc;
+  font-weight: 100;
+}
+
+.score {
+  font-size: 3em;
 }
 
 .grid {
@@ -39,8 +61,6 @@ body {
 	display: grid;
 	padding: 1px;
 	gap: 1px;
-	grid-template-columns: repeat(16, 1fr);
-	grid-template-rows: repeat(16, 1fr);
 }
 
 .block {
@@ -52,5 +72,5 @@ body {
 }
 
 .food {
-  background: green;
+	background: green;
 }

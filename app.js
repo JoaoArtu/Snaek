@@ -12,13 +12,30 @@ const newElement = str => {
 
 const title = newElement('h1')
 title.innerHTML = 'Snaek is Frend'
+app.appendChild(title)
+
+const playBtn = newElement('.play')
+const btn = newElement('a.btn')
+playBtn.innerHTML = 'Play'
+btn.appendChild(playBtn)
+app.appendChild(btn)
+
+const howTo = newElement('p.how-to')
+howTo.innerHTML = 'You can use either WASD or arrows to change direction'
+app.appendChild(howTo)
 
 const game = newElement('.game')
+const gridSize = 12
+app.appendChild(game)
 
-const gridSize = 16
+const score = newElement('.score')
+score.innerHTML = 0
+app.appendChild(score)
 
 const grid = size => {
 	const element = newElement('.grid')
+	element.style.gridTemplateColumns = `repeat(${size}, 1fr)`
+	element.style.gridTemplateRows = `repeat(${size}, 1fr)`
 
 	const generateGrid = size => {
 		for (let i = 0; i < size; i++) {
@@ -37,15 +54,10 @@ const grid = size => {
 	return element
 }
 
+game.appendChild(grid(gridSize))
+
 const snake = []
 let direction = 'right'
-
-const changeDirection = e => {
-	if (e.key === 'ArrowLeft' || e.key === 'a') direction = 'left'
-	if (e.key === 'ArrowRight' || e.key === 'd') direction = 'right'
-	if (e.key === 'ArrowUp' || e.key === 'w') direction = 'up'
-	if (e.key === 'ArrowDown' || e.key === 's') direction = 'down'
-}
 
 const food = () => {
 	const x = Math.floor(Math.random() * gridSize)
@@ -57,22 +69,25 @@ const food = () => {
 }
 
 const Snake = () => {
-	const drawSnake = (snake, old) => {
+	const drawSnake = remove => {
 		snake && snake.forEach(block => block.classList.add('snake'))
-		old && old.classList.remove('snake')
+		remove && snake.pop().classList.remove('snake')
 	}
 
+	const changeDirection = e => {
+		if ((e.key === 'ArrowLeft' || e.key === 'a') && direction !== 'right') direction = 'left'
+		else if ((e.key === 'ArrowRight' || e.key === 'd') && direction !== 'left') direction = 'right'
+		else if ((e.key === 'ArrowUp' || e.key === 'w') && direction !== 'down') direction = 'up'
+		else if ((e.key === 'ArrowDown' || e.key === 's') && direction !== 'up') direction = 'down'
+	}
 	const checkCollision = (x, y) => {
 		const nextBlock = game.querySelector(`[x="${x}"][y="${y}"]`)
-		// Walls and self
-		if (nextBlock && !nextBlock.classList.contains('snake')) {
-			return true
-		}
+		if (nextBlock && !nextBlock.classList.contains('snake')) return true
 		return false
 	}
 
 	const checkFood = (x, y) => {
-    const nextBlock = game.querySelector(`[x="${x}"][y="${y}"]`)
+		const nextBlock = game.querySelector(`[x="${x}"][y="${y}"]`)
 		if (nextBlock.classList.contains('food')) {
 			nextBlock.classList.remove('food')
 			food()
@@ -93,33 +108,31 @@ const Snake = () => {
 		if (checkCollision(x, y)) {
 			const newBlock = () => game.querySelector(`[x="${x}"][y="${y}"]`)
 			snake.unshift(newBlock())
-      if (!checkFood(x, y)) Snake().drawSnake(snake, snake.pop())
-      else Snake().drawSnake(snake)
+			if (!checkFood(x, y)) Snake().drawSnake(true)
+			else {
+				Snake().drawSnake()
+				score.innerHTML++
+			}
 		}
 	}
 
-	return { snake, drawSnake, moveSnake }
+	return { drawSnake, moveSnake, checkCollision, checkFood, changeDirection }
 }
-
-app.appendChild(title)
-app.appendChild(game)
-game.appendChild(grid(gridSize))
 
 const getBlock = (x, y) => game.querySelector(`[x="${x}"][y="${y}"]`)
 
 snake.unshift(getBlock(0, 0))
-snake.unshift(getBlock(1, 0))
-snake.unshift(getBlock(2, 0))
+snake.unshift(getBlock(0, 0))
+snake.unshift(getBlock(0, 0))
 
-Snake().drawSnake(snake)
+Snake().drawSnake()
 
 food()
 
-const input = () => window.addEventListener('keydown', changeDirection)
+const checkInput = () => window.addEventListener('keydown', Snake().changeDirection)
+checkInput()
 
-let pace = 5
-
-input()
+let pace = 10
 
 const repeat = () => {
 	Snake().moveSnake()
@@ -128,15 +141,3 @@ const repeat = () => {
 }
 
 repeat()
-
-/*-------------------------------------------------------------------------------------------------------------------*/
-
-// let i = 1
-
-// const repeat = () => {
-// 	app.innerHTML = i++
-// 	pace += 1 / (pace * 10)
-// 	setTimeout(repeat, (1 / pace) * 1000)
-// }
-
-// repeat()
